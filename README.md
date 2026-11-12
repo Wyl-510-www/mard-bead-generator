@@ -4,6 +4,39 @@
 
 > 项目源码展示。运行云端生成需要配置自己的小程序 AppID、云环境和真实色卡数据库；仓库不包含生产色库、密钥或个人图片，也不代表已通过微信平台审核。
 
+## 项目实拍与导出成果
+
+以下为项目界面与导出图纸截图，展示选图配置、结果预览、颜色编辑和导出流程。首页展示默认 100×100 配置；花朵示例使用 48×48 图纸，两者为不同操作阶段的截图。
+
+<table>
+  <tr>
+    <th>选图与尺寸配置</th>
+    <th>图纸效果预览</th>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/home.png" alt="首页：选择图片并配置图纸宽高和常用尺寸" width="260" /></td>
+    <td><img src="docs/screenshots/preview.png" alt="48×48 花朵效果预览与镜像、撤销等编辑入口" width="260" /></td>
+  </tr>
+  <tr>
+    <th>颜色编辑</th>
+    <th>导出设置</th>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/color-editor.png" alt="颜色调整：色号与颗数、批量删除、全图换色和单格改色" width="260" /></td>
+    <td><img src="docs/screenshots/export-settings.png" alt="导出设置：拼豆样式、网格格式、色号标注和 PNG/PDF 导出入口" width="260" /></td>
+  </tr>
+</table>
+
+### 导出的色号图纸
+
+花朵示例为 **48×48 格、30 色、共 1074 颗**。图纸展示圆形拼豆、完整网格、连续色号简化标注，以及各色号的用量清单；48×48 是网格尺寸，1074 是实际用豆数量。
+
+[查看完整分辨率图纸](docs/screenshots/exported-pattern.png)
+
+<img src="docs/screenshots/exported-pattern.png" alt="48×48 花朵拼豆成品图纸：30 色、1074 颗，含网格、色号和用量清单" width="780" />
+
+截图由项目作者提供，按原图收录；仅用于展示已呈现的界面与导出效果，不替代真机、云端部署或微信审核验证。展示图片存放在文档目录，不进入小程序代码包。
+
 ## 功能一览
 
 | 环节 | 已实现能力 |
