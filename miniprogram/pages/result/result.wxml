@@ -1,0 +1,127 @@
+<scroll-view class="page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <!-- 网格图纸展示区 -->
+  <view class="card grid-card">
+    <view class="card-header">
+      <view class="card-title">拼豆图纸</view>
+      <view class="card-info">{{gridWidth}}×{{gridHeight}}</view>
+    </view>
+
+    <view class="zoom-bar">
+      <button bindtap="onPreviewMode" data-mode="effect">效果预览</button>
+      <button bindtap="onPreviewMode" data-mode="pattern">色号图纸</button>
+    </view>
+    <!-- 缩放控制 -->
+    <view class="zoom-bar">
+      <view class="zoom-btn {{zoomLevel <= 0.5 ? 'zoom-disabled' : ''}}" bindtap="onZoomOut">−</view>
+      <view class="zoom-label">{{zoomPercent}}%</view>
+      <view class="zoom-btn {{zoomLevel >= 5 ? 'zoom-disabled' : ''}}" bindtap="onZoomIn">+</view>
+    </view>
+
+    <view class="edit-hint">100% 完整适配 · 放大查看细节{{editMode === 'paint' ? ' · 点击单格换色' : ''}}</view>
+    <!-- Canvas 容器（独立滚动） -->
+    <scroll-view class="canvas-scroll" scroll-x scroll-y enhanced show-scrollbar="{{false}}">
+      <image id="previewImage" bindtap="paintCell" wx:if="{{previewPath}}" src="{{previewPath}}" mode="scaleToFill" style="display: block; width: {{canvasWidth}}px; height: {{canvasHeight}}px;" />
+    </scroll-view>
+  </view>
+
+  <view class="card">
+    <view class="edit-actions">
+      <button bindtap="toggleEditor">颜色编辑</button>
+      <button bindtap="mirrorGrid" data-axis="horizontal">左右镜像</button>
+      <button bindtap="mirrorGrid" data-axis="vertical">上下镜像</button>
+      <button bindtap="undoEdit" disabled="{{!canUndo}}">撤销</button>
+      <button bindtap="redoEdit" disabled="{{!canRedo}}">重做</button>
+    </view>
+  </view>
+  <!-- 色号统计区（独立卡片） -->
+  <view class="card stats-card">
+    <view class="card-header">
+      <view class="card-title">色号统计</view>
+      <view class="card-info">共 {{colorStats.length}} 色</view>
+    </view>
+
+    <!-- 统计列表（可独立滚动） -->
+    <scroll-view class="stats-scroll" scroll-y enhanced show-scrollbar="{{true}}">
+      <view class="color-grid">
+        <view class="color-card" wx:for="{{colorStats}}" wx:key="code">
+          <view class="color-swatch" style="background-color: {{item.hex}};"></view>
+          <view class="color-body">
+            <view class="color-code">{{item.code}}</view>
+            <view class="color-name">{{item.name || ''}}</view>
+          </view>
+          <view class="color-count">{{item.count}}颗</view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 总计 -->
+    <view class="total-bar">
+      <text class="total-label">总计</text>
+      <text class="total-num">{{totalCount}}颗</text>
+    </view>
+  </view>
+  <button class="feedback-entry" open-type="share">分享小程序</button>
+  <button class="feedback-entry" open-type="feedback">意见反馈</button>
+</scroll-view>
+
+<!-- 底部操作栏（始终固定） -->
+<view class="bottom-bar">
+  <button class="btn-secondary" bindtap="handleRegenerate">重新生成</button>
+  <button class="btn-primary" bindtap="openExport">导出图纸</button>
+</view>
+
+<!-- Canvas 仅用于生成预览，避免原生画布在嵌套滚动时偏移或越界。 -->
+<canvas type="2d" id="gridCanvas" class="render-canvas"></canvas>
+
+<view wx:if="{{editorOpen}}" class="modal-mask" bindtap="toggleEditor" catchtouchmove="stopPanelTouch">
+  <view class="modal-sheet" catchtap="stopPanelTouch">
+    <view class="modal-header"><text>颜色调整</text><button bindtap="toggleEditor">关闭</button></view>
+    <scroll-view scroll-y class="modal-body">    <view wx:if="{{editorOpen}}">
+      <view class="edit-hint" wx:if="{{paletteLoading}}">正在加载完整色库…</view>
+      <view wx:if="{{paletteError}}" class="edit-hint">完整色库加载失败，当前仅显示已用颜色<button size="mini" bindtap="loadPalette">重试</button></view>
+      <view class="edit-actions"><button bindtap="setEditMode" data-mode="delete">批量删除</button><button bindtap="setEditMode" data-mode="replace">全图换色</button><button bindtap="setEditMode" data-mode="paint">单格改色</button></view>
+      <view class="edit-hint">{{editMode === 'delete' ? '选择待删除色号，删除后留空' : editMode === 'paint' ? '选择目标颜色，再点击图纸单格' : '先选原色号，再选目标颜色'}}</view>
+      <view class="edit-swatches" wx:if="{{editMode !== 'paint'}}">
+        <view class="edit-swatch" wx:for="{{colorStats}}" wx:key="code" bindtap="chooseUsed" data-code="{{item.code}}"><view style="background:{{item.hex}}" class="edit-chip"></view><text>{{item.code}} · {{item.count}}</text></view>
+      </view>
+      <view class="edit-hint">已选删除：{{selectedCodes}}　原色：{{fromCode}}　目标：{{targetCode}}</view>
+      <view wx:if="{{editMode !== 'delete'}}">
+        <input placeholder="搜索目标色号或名称" bindinput="onSearch" />
+        <scroll-view scroll-y class="palette-scroll"><view class="edit-swatches"><view class="edit-swatch" wx:for="{{paletteView}}" wx:key="code" bindtap="chooseTarget" data-code="{{item.code}}"><view class="edit-chip" style="background:{{item.hex}}"></view><text>{{item.code}}</text></view></view></scroll-view>
+      </view>
+      <button wx:if="{{editMode !== 'paint'}}" bindtap="confirmColorEdit">{{editMode === 'delete' ? '删除已选颜色' : '确认全图换色'}}</button>
+    </view>
+</scroll-view>
+  </view>
+</view>
+<view wx:if="{{exportOpen}}" class="modal-mask" bindtap="closeExport" catchtouchmove="stopPanelTouch">
+  <view class="modal-sheet" catchtap="stopPanelTouch">
+    <view class="modal-header"><text>导出图纸</text><button bindtap="closeExport">关闭</button></view>
+    <scroll-view scroll-y class="modal-body">
+      <view class="export-sample"><image wx:if="{{exportPreviewPath}}" src="{{exportPreviewPath}}" mode="widthFix" /><text>实时样式示例 · 实际导出使用你的完整图纸</text></view>
+  <view class="card export-panel">
+    <view class="card-title">导出设置</view>
+    <view class="edit-hint">拼豆样式</view>
+    <view class="export-options">
+      <button class="option {{exportShape === 'square' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportShape" data-value="square">方形</button>
+      <button class="option {{exportShape === 'round' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportShape" data-value="round">圆形</button>
+      <button class="option {{exportShape === 'hollow' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportShape" data-value="hollow">空心</button>
+    </view>
+    <view class="edit-hint">网格格式</view><view class="export-options">
+      <button class="option {{exportGrid === 'full' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportGrid" data-value="full">完整网格</button>
+      <button class="option {{exportGrid === 'guides' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportGrid" data-value="guides">仅定位线</button>
+      <button class="option {{exportGrid === 'none' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportGrid" data-value="none">不显示网格</button>
+    </view>
+    <view class="edit-hint">色号显示（连续至少 4 格时简化）</view><view class="export-options">
+      <button class="option {{exportLabels === 'all' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportLabels" data-value="all">逐格色号</button>
+      <button class="option {{exportLabels === 'merged' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportLabels" data-value="merged">合并色号 × 数量</button>
+      <button class="option {{exportLabels === 'ends' ? 'selected' : ''}}" bindtap="setExportOption" data-key="exportLabels" data-value="ends">首格色号 · 末格数量</button>
+    </view>
+    <view class="edit-hint">设置同时应用于 PNG 和 PDF；预览查看方式不影响导出。</view>
+  </view>
+
+    </scroll-view>
+    <view class="modal-footer"><button class="btn-secondary" bindtap="handleExportPdf" disabled="{{saving}}">导出 PDF</button><button class="btn-primary" bindtap="handleSaveImage" disabled="{{saving}}">保存 PNG</button></view>
+  </view>
+</view>
+<canvas type="2d" id="exportCanvas" class="render-canvas"></canvas>

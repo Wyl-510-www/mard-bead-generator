@@ -1,0 +1,109 @@
+<view class="page">
+  <!-- 顶部标题区 -->
+  <view class="header">
+    <view class="header-title">豆绘小屋</view>
+    <view class="header-desc">选择图片，一键生成拼豆图纸</view>
+  </view>
+
+  <button wx:if="{{hasDraft}}" class="feedback-entry" bindtap="restoreDraft">继续上次图纸</button>
+  <!-- 图片选择区域 -->
+  <view class="card">
+    <view class="card-title">选择图片</view>
+    <view class="upload-area" wx:if="{{!imageUrl}}" bindtap="handleChooseImage">
+      <view class="upload-icon">+</view>
+      <view class="upload-text">点击选择图片</view>
+      <view class="upload-sub">支持从相册选择或拍照</view>
+    </view>
+    <view class="preview-area" wx:else>
+      <image class="preview-image" src="{{imageUrl}}" mode="aspectFit" />
+      <view class="preview-remove" bindtap="handleRemoveImage">✕</view>
+    </view>
+  </view>
+
+  <!-- 尺寸设置区域 -->
+  <view class="card">
+    <view class="card-title">图纸尺寸</view>
+
+    <!-- 宽高输入（带加减按钮） -->
+    <view class="size-row">
+      <view class="size-item">
+        <view class="size-label">宽度</view>
+        <view class="stepper-row">
+          <view class="step-btn" bindtap="onWidthDown">−</view>
+          <input
+            class="size-input {{lockRatio && imageRatio ? 'size-locked' : ''}}"
+            type="number"
+            value="{{width}}"
+            bindinput="onWidthInput"
+            bindblur="onWidthBlur"
+            placeholder="20"
+            maxlength="3"
+          />
+          <view class="step-btn" bindtap="onWidthUp">+</view>
+        </view>
+      </view>
+      <view class="size-sep">×</view>
+      <view class="size-item">
+        <view class="size-label">高度</view>
+        <view class="stepper-row">
+          <view class="step-btn" bindtap="onHeightDown">−</view>
+          <input
+            class="size-input {{lockRatio && imageRatio ? 'size-locked' : ''}}"
+            type="number"
+            value="{{height}}"
+            bindinput="onHeightInput"
+            bindblur="onHeightBlur"
+            placeholder="20"
+            maxlength="3"
+          />
+          <view class="step-btn" bindtap="onHeightUp">+</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 常用快捷尺寸 -->
+    <view class="presets-label">常用尺寸</view>
+    <view class="presets">
+      <view class="preset {{width === 10 && height === 10 ? 'active' : ''}}" bindtap="onPreset" data-w="10" data-h="10">10×10</view>
+      <view class="preset {{width === 16 && height === 16 ? 'active' : ''}}" bindtap="onPreset" data-w="16" data-h="16">16×16</view>
+      <view class="preset {{width === 20 && height === 20 ? 'active' : ''}}" bindtap="onPreset" data-w="20" data-h="20">20×20</view>
+      <view class="preset {{width === 30 && height === 30 ? 'active' : ''}}" bindtap="onPreset" data-w="30" data-h="30">30×30</view>
+      <view class="preset {{width === 40 && height === 40 ? 'active' : ''}}" bindtap="onPreset" data-w="40" data-h="40">40×40</view>
+      <view class="preset" bindtap="onPreset" data-w="48" data-h="48">48×48</view>
+      <view class="preset" bindtap="onPreset" data-w="64" data-h="64">64×64</view>
+      <view class="preset {{width === 100 && height === 100 ? 'active' : ''}}" bindtap="onPreset" data-w="100" data-h="100">100×100</view>
+    </view>
+    <view class="upload-sub">默认 100×100，格数越多，细节越丰富；图片保持比例，空白处填白。</view>
+
+    <!-- 锁定比例 -->
+    <view class="lock-row" wx:if="{{imageUrl}}">
+      <view class="lock-label">锁定比例</view>
+      <switch checked="{{lockRatio}}" bindchange="onLockRatioChange" color="#1677FF" />
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">图片处理</view>
+    <view class="lock-label">照片处理</view>
+    <view class="lock-row"><text>限制用色数量</text><switch checked="{{limitColors}}" bindchange="onLimitColorsChange" /></view>
+    <view wx:if="{{limitColors}}">
+      <view class="lock-label">最多 {{maxColors}} 种颜色（实际可能更少）</view>
+      <slider min="8" max="64" step="4" value="{{maxColors}}" bindchange="onColorsChange" show-value />
+    </view>
+    <view class="upload-sub">默认不限色，使用完整色库匹配。增加颜色可保留更多色彩层次，也可能增加杂色和需要采购的色号种类。</view>
+    <view class="lock-row"><text>抖动（渐变更细腻，杂点更多）</text><switch checked="{{dither}}" bindchange="onDitherChange" /></view>
+  </view>
+  <button class="feedback-entry" open-type="share">分享小程序</button>
+  <button class="feedback-entry" open-type="feedback">意见反馈</button>
+  <!-- 底部生成按钮 -->
+  <view class="bottom-bar">
+    <button
+      class="generate-btn {{generating ? 'btn-loading' : ''}}"
+      disabled="{{!imageUrl || generating}}"
+      bindtap="handleGenerate"
+      loading="{{generating}}"
+    >
+      {{generating ? '生成中...' : '一键生成图纸'}}
+    </button>
+  </view>
+</view>

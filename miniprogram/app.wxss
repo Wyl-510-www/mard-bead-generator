@@ -1,0 +1,56 @@
+page {
+  --primary: #1677FF;
+  --primary-light: #69B1FF;
+  --primary-bg: #F0F7FF;
+  --text-primary: #333333;
+  --text-secondary: #999999;
+  --border: #E5E5E5;
+  --bg: #F6F6F6;
+  --white: #FFFFFF;
+  --card-radius: 16rpx;
+
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", sans-serif;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+button {
+  background: initial;
+  padding: 0;
+  margin: 0;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button::after {
+  border: none;
+}
+
+button[loading]::after {
+  display: none;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--card-radius);
+  padding: 32rpx;
+  margin: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* 两个页面共用的原生意见反馈入口。 */
+.feedback-entry {
+  margin: 16rpx auto 32rpx;
+  padding: 0 32rpx;
+  width: fit-content;
+  min-height: 80rpx;
+  line-height: 80rpx;
+  background: transparent;
+  color: #667085;
+  font-size: 26rpx;
+}
+.feedback-entry::after { border: none; }

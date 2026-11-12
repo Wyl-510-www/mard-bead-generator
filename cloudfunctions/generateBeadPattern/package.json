@@ -1,0 +1,9 @@
+{
+  "name": "generateBeadPattern",
+  "version": "1.0.0",
+  "description": "Mard拼豆图纸生成",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}
